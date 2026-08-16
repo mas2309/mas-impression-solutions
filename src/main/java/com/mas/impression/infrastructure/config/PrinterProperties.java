@@ -16,6 +16,8 @@ public class PrinterProperties {
     private PrinterConnectionType connectionType = PrinterConnectionType.NETWORK;
     private PaperWidth paperWidth = PaperWidth.MM_58;
     private Network network = new Network();
+    private Usb usb = new Usb();
+    private Bluetooth bluetooth = new Bluetooth();
 
     public PrinterConnectionType getConnectionType() {
         return connectionType;
@@ -41,9 +43,26 @@ public class PrinterProperties {
         this.network = network;
     }
 
+    public Usb getUsb() {
+        return usb;
+    }
+
+    public void setUsb(Usb usb) {
+        this.usb = usb;
+    }
+
+    public Bluetooth getBluetooth() {
+        return bluetooth;
+    }
+
+    public void setBluetooth(Bluetooth bluetooth) {
+        this.bluetooth = bluetooth;
+    }
+
     public PrinterConnectionConfig toConnectionConfig() {
         return new PrinterConnectionConfig(
-                connectionType, paperWidth, network.getHost(), network.getPort(), network.getConnectTimeoutMillis());
+                connectionType, paperWidth, network.getHost(), network.getPort(), network.getConnectTimeoutMillis(),
+                usb.getPrintServiceName(), bluetooth.getPortName());
     }
 
     public static class Network {
@@ -74,6 +93,32 @@ public class PrinterProperties {
 
         public void setConnectTimeoutMillis(int connectTimeoutMillis) {
             this.connectTimeoutMillis = connectTimeoutMillis;
+        }
+    }
+
+    public static class Usb {
+
+        private String printServiceName = "";
+
+        public String getPrintServiceName() {
+            return printServiceName;
+        }
+
+        public void setPrintServiceName(String printServiceName) {
+            this.printServiceName = printServiceName;
+        }
+    }
+
+    public static class Bluetooth {
+
+        private String portName = "";
+
+        public String getPortName() {
+            return portName;
+        }
+
+        public void setPortName(String portName) {
+            this.portName = portName;
         }
     }
 }

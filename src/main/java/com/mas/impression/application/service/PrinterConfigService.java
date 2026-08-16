@@ -27,7 +27,8 @@ public class PrinterConfigService implements ConfigurePrinterUseCase {
     public PrinterConfigResponse updateConfig(PrinterConfigRequest request) {
         PrinterConnectionConfig config = new PrinterConnectionConfig(
                 request.connectionType(), request.paperWidth(), request.host(),
-                request.port(), request.connectTimeoutMillis());
+                request.port(), request.connectTimeoutMillis(),
+                request.usbPrintServiceName(), request.bluetoothPortName());
         repository.save(config);
         return toResponse(config);
     }
@@ -35,6 +36,7 @@ public class PrinterConfigService implements ConfigurePrinterUseCase {
     private static PrinterConfigResponse toResponse(PrinterConnectionConfig config) {
         return new PrinterConfigResponse(
                 config.connectionType(), config.paperWidth(), config.host(),
-                config.port(), config.connectTimeoutMillis());
+                config.port(), config.connectTimeoutMillis(),
+                config.usbPrintServiceName(), config.bluetoothPortName());
     }
 }

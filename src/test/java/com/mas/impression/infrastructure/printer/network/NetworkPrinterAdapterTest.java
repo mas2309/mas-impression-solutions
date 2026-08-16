@@ -88,6 +88,7 @@ class NetworkPrinterAdapterTest {
     }
 
     private static PrinterConnectionConfig configFor(int port) {
-        return new PrinterConnectionConfig(PrinterConnectionType.NETWORK, PaperWidth.MM_58, "127.0.0.1", port, 1000);
+        return new PrinterConnectionConfig(
+                PrinterConnectionType.NETWORK, PaperWidth.MM_58, "127.0.0.1", port, 1000, null, null);
     }
 }

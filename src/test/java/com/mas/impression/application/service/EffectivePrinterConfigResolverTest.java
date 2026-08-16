@@ -31,7 +31,7 @@ class EffectivePrinterConfigResolverTest {
     void prefersSavedConfigOverDefaults() {
         PrinterConfigRepositoryPort repository = mock(PrinterConfigRepositoryPort.class);
         PrinterConnectionConfig saved = new PrinterConnectionConfig(
-                PrinterConnectionType.NETWORK, PaperWidth.MM_80, "192.168.1.50", 9100, 3000);
+                PrinterConnectionType.NETWORK, PaperWidth.MM_80, "192.168.1.50", 9100, 3000, null, null);
         when(repository.load()).thenReturn(Optional.of(saved));
 
         PrinterConnectionConfig resolved =

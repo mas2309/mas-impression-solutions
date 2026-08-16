@@ -27,7 +27,7 @@ class JsonPrinterConfigStoreTest {
     void savedConfigCanBeLoadedBack(@TempDir Path tempDir) {
         JsonPrinterConfigStore store = storeIn(tempDir);
         PrinterConnectionConfig config = new PrinterConnectionConfig(
-                PrinterConnectionType.NETWORK, PaperWidth.MM_80, "192.168.1.50", 9100, 2500);
+                PrinterConnectionType.NETWORK, PaperWidth.MM_80, "192.168.1.50", 9100, 2500, null, null);
 
         store.save(config);
         Optional<PrinterConnectionConfig> loaded = store.load();
@@ -39,9 +39,10 @@ class JsonPrinterConfigStoreTest {
     @Test
     void savingTwiceOverwritesThePreviousValue(@TempDir Path tempDir) {
         JsonPrinterConfigStore store = storeIn(tempDir);
-        store.save(new PrinterConnectionConfig(PrinterConnectionType.NETWORK, PaperWidth.MM_58, "127.0.0.1", 9100, 1000));
+        store.save(new PrinterConnectionConfig(
+                PrinterConnectionType.NETWORK, PaperWidth.MM_58, "127.0.0.1", 9100, 1000, null, null));
         PrinterConnectionConfig updated = new PrinterConnectionConfig(
-                PrinterConnectionType.NETWORK, PaperWidth.MM_80, "10.0.0.5", 9200, 4000);
+                PrinterConnectionType.NETWORK, PaperWidth.MM_80, "10.0.0.5", 9200, 4000, null, null);
 
         store.save(updated);
 

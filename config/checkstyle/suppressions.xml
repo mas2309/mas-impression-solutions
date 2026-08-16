@@ -36,4 +36,8 @@
 
     <!-- Los tests fijan valores esperados concretos (importes, anchos de papel, puertos) -->
     <suppress checks="MagicNumber" files="[\\/]test[\\/].*\.java$"/>
+
+    <!-- El controlador de admin agrega intencionalmente varios casos de uso + gateways de
+         descubrimiento de dispositivos; misma razón que la excepción de application/service. -->
+    <suppress checks="ParameterNumber" files="AdminUiController\.java$"/>
 </suppressions>

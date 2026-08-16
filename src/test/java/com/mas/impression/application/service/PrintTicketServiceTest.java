@@ -7,6 +7,7 @@ import com.mas.impression.domain.model.PrintJob;
 import com.mas.impression.domain.model.PrintStatus;
 import com.mas.impression.domain.port.PrinterConfigRepositoryPort;
 import com.mas.impression.domain.port.PrinterPort;
+import com.mas.impression.domain.port.PrinterPortResolver;
 import com.mas.impression.domain.port.PrintJobHistoryPort;
 import com.mas.impression.domain.service.TicketFormatter;
 import com.mas.impression.infrastructure.asset.LogoAssetProvider;
@@ -45,8 +46,10 @@ class PrintTicketServiceTest {
         when(repository.load()).thenReturn(Optional.empty());
         EffectivePrinterConfigResolver configResolver =
                 new EffectivePrinterConfigResolver(repository, new PrinterProperties());
+        PrinterPortResolver adapterResolver = mock(PrinterPortResolver.class);
+        when(adapterResolver.resolve(any())).thenReturn(printerPort);
         service = new PrintTicketService(
-                printerPort, ticketFormatter, configResolver, history, logoAssetProvider, backendNotifier);
+                adapterResolver, ticketFormatter, configResolver, history, logoAssetProvider, backendNotifier);
         when(ticketFormatter.format(any(), any(), any())).thenReturn(new byte[] {1, 2, 3});
         when(logoAssetProvider.rasterFor(any())).thenReturn(new byte[0]);
     }

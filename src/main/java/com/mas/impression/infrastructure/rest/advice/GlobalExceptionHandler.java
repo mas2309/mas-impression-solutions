@@ -1,6 +1,7 @@
 package com.mas.impression.infrastructure.rest.advice;
 
 import com.mas.impression.domain.exception.PrintAgentException;
+import com.mas.impression.infrastructure.rest.PrintController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -11,7 +12,14 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.stream.Collectors;
 
-@RestControllerAdvice
+/**
+ * Scoped to the JSON API controllers only ({@code basePackageClasses = PrintController.class}) —
+ * an unscoped {@code @RestControllerAdvice} also intercepts exceptions from the Thymeleaf admin
+ * controller and from framework internals like static-resource lookups (e.g. the browser's
+ * automatic {@code /favicon.ico} request throws {@code NoResourceFoundException}), which would
+ * otherwise get logged here as a scary "unexpected error" for something completely benign.
+ */
+@RestControllerAdvice(basePackageClasses = PrintController.class)
 public class GlobalExceptionHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(GlobalExceptionHandler.class);

@@ -7,6 +7,8 @@
         body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; color: #1a1a1a; }
         nav a { margin-right: 1rem; }
         .card { border: 1px solid #ddd; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1.25rem; }
+        fieldset { border: 1px solid #eee; border-radius: 6px; margin-top: 1rem; padding: 0.75rem 1rem; }
+        legend { font-weight: 600; padding: 0 0.4rem; }
         label { display: block; margin-top: 0.9rem; font-weight: 600; }
         input, select { width: 100%; padding: 0.4rem; margin-top: 0.3rem; box-sizing: border-box; }
         button { margin-top: 1.25rem; padding: 0.5rem 1.25rem; }
@@ -28,10 +30,11 @@
 <div class="card">
     <form method="post" action="/admin/config">
         <label for="connectionType">Transporte</label>
-        <select id="connectionType" name="connectionType">
-            <option value="NETWORK" selected="selected">Red (WiFi / Ethernet)</option>
+        <select id="connectionType" name="connectionType" onchange="showRelevantSection()">
+            <option value="NETWORK" th:selected="${config.connectionType().name() == 'NETWORK'}">Red (WiFi / Ethernet)</option>
+            <option value="USB" th:selected="${config.connectionType().name() == 'USB'}">USB</option>
+            <option value="BLUETOOTH" th:selected="${config.connectionType().name() == 'BLUETOOTH'}">Bluetooth</option>
         </select>
-        <p><small>USB y Bluetooth llegan en una versión posterior.</small></p>
 
         <label for="paperWidth">Ancho de papel</label>
         <select id="paperWidth" name="paperWidth">
@@ -39,18 +42,58 @@
             <option value="MM_80" th:selected="${config.paperWidth().name() == 'MM_80'}">80mm</option>
         </select>
 
-        <label for="host">Dirección IP de la impresora</label>
-        <input type="text" id="host" name="host" th:value="${config.host()}" placeholder="192.168.1.50"/>
+        <fieldset id="section-network">
+            <legend>Red</legend>
+            <label for="host">Dirección IP de la impresora</label>
+            <input type="text" id="host" name="host" th:value="${config.host()}" placeholder="192.168.1.50"/>
 
-        <label for="port">Puerto</label>
-        <input type="number" id="port" name="port" th:value="${config.port()}" min="1" max="65535"/>
+            <label for="port">Puerto</label>
+            <input type="number" id="port" name="port" th:value="${config.port()}" min="1" max="65535"/>
 
-        <label for="connectTimeoutMillis">Tiempo de espera de conexión (ms)</label>
-        <input type="number" id="connectTimeoutMillis" name="connectTimeoutMillis"
-               th:value="${config.connectTimeoutMillis()}" min="100"/>
+            <label for="connectTimeoutMillis">Tiempo de espera de conexión (ms)</label>
+            <input type="number" id="connectTimeoutMillis" name="connectTimeoutMillis"
+                   th:value="${config.connectTimeoutMillis()}" min="100"/>
+        </fieldset>
+
+        <fieldset id="section-usb">
+            <legend>USB</legend>
+            <label for="usbPrintServiceName">Impresora registrada en Windows</label>
+            <select id="usbPrintServiceName" name="usbPrintServiceName">
+                <option value="" th:if="${#lists.isEmpty(usbPrintServices)}" disabled="disabled">
+                    No se detectaron impresoras USB
+                </option>
+                <option th:each="name : ${usbPrintServices}" th:value="${name}" th:text="${name}"
+                        th:selected="${name == config.usbPrintServiceName()}"></option>
+            </select>
+            <p><small>Instala primero la impresora en Windows (driver del fabricante o "Generic / Text Only").</small></p>
+        </fieldset>
+
+        <fieldset id="section-bluetooth">
+            <legend>Bluetooth</legend>
+            <label for="bluetoothPortName">Puerto COM emparejado</label>
+            <select id="bluetoothPortName" name="bluetoothPortName">
+                <option value="" th:if="${#lists.isEmpty(bluetoothPorts)}" disabled="disabled">
+                    No se detectaron puertos COM
+                </option>
+                <option th:each="name : ${bluetoothPorts}" th:value="${name}" th:text="${name}"
+                        th:selected="${name == config.bluetoothPortName()}"></option>
+            </select>
+            <p><small>Empareja la impresora desde la configuración de Bluetooth de Windows primero.</small></p>
+        </fieldset>
 
         <button type="submit">Guardar</button>
     </form>
 </div>
+
+<script th:inline="javascript">
+    function showRelevantSection() {
+        var selected = document.getElementById('connectionType').value;
+        var sections = { NETWORK: 'section-network', USB: 'section-usb', BLUETOOTH: 'section-bluetooth' };
+        Object.keys(sections).forEach(function (key) {
+            document.getElementById(sections[key]).style.display = (key === selected) ? 'block' : 'none';
+        });
+    }
+    showRelevantSection();
+</script>
 </body>
 </html>

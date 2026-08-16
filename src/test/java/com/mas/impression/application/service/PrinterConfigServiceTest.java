@@ -35,12 +35,12 @@ class PrinterConfigServiceTest {
     @Test
     void updateConfigSavesAndEchoesTheNewValue() {
         PrinterConfigRequest request = new PrinterConfigRequest(
-                PrinterConnectionType.NETWORK, PaperWidth.MM_80, "192.168.1.50", 9100, 3000);
+                PrinterConnectionType.NETWORK, PaperWidth.MM_80, "192.168.1.50", 9100, 3000, null, null);
 
         PrinterConfigResponse response = service.updateConfig(request);
 
         verify(repository).save(new PrinterConnectionConfig(
-                PrinterConnectionType.NETWORK, PaperWidth.MM_80, "192.168.1.50", 9100, 3000));
+                PrinterConnectionType.NETWORK, PaperWidth.MM_80, "192.168.1.50", 9100, 3000, null, null));
         assertEquals("192.168.1.50", response.host());
         assertEquals(PaperWidth.MM_80, response.paperWidth());
     }

@@ -11,6 +11,8 @@ import com.mas.impression.domain.model.PaperWidth;
 import com.mas.impression.domain.model.PrintStatus;
 import com.mas.impression.domain.model.PrinterConnectionType;
 import com.mas.impression.infrastructure.config.AgentSecurityProperties;
+import com.mas.impression.infrastructure.printer.bluetooth.BluetoothPortGateway;
+import com.mas.impression.infrastructure.printer.usb.UsbPrintServiceGateway;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -52,6 +54,12 @@ class AdminUiControllerTest {
     @MockitoBean
     private PrintTicketUseCase printTicketUseCase;
 
+    @MockitoBean
+    private UsbPrintServiceGateway usbGateway;
+
+    @MockitoBean
+    private BluetoothPortGateway bluetoothGateway;
+
     @Test
     void dashboardRendersStatusAndHistory() throws Exception {
         when(statusUseCase.getStatus()).thenReturn(
@@ -67,18 +75,22 @@ class AdminUiControllerTest {
     @Test
     void configFormRendersCurrentConfig() throws Exception {
         when(configureUseCase.getConfig()).thenReturn(
-                new PrinterConfigResponse(PrinterConnectionType.NETWORK, PaperWidth.MM_58, "127.0.0.1", 9100, 3000));
+                new PrinterConfigResponse(
+                        PrinterConnectionType.NETWORK, PaperWidth.MM_58, "127.0.0.1", 9100, 3000, null, null));
+        when(usbGateway.listPrintServiceNames()).thenReturn(List.of("POS-58"));
+        when(bluetoothGateway.listPortNames()).thenReturn(List.of("COM5"));
 
         mockMvc.perform(get("/admin/config"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/config"))
-                .andExpect(model().attributeExists("config"));
+                .andExpect(model().attributeExists("config", "usbPrintServices", "bluetoothPorts"));
     }
 
     @Test
     void updateConfigWithValidDataSavesAndRedirects() throws Exception {
         when(configureUseCase.updateConfig(any())).thenReturn(
-                new PrinterConfigResponse(PrinterConnectionType.NETWORK, PaperWidth.MM_80, "192.168.1.50", 9100, 3000));
+                new PrinterConfigResponse(
+                        PrinterConnectionType.NETWORK, PaperWidth.MM_80, "192.168.1.50", 9100, 3000, null, null));
 
         mockMvc.perform(post("/admin/config")
                         .param("connectionType", "NETWORK")

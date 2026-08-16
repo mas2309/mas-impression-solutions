@@ -9,6 +9,8 @@ import com.mas.impression.application.port.in.GetPrinterStatusUseCase;
 import com.mas.impression.application.port.in.PrintTicketUseCase;
 import com.mas.impression.domain.model.PrintStatus;
 import com.mas.impression.infrastructure.config.AgentSecurityProperties;
+import com.mas.impression.infrastructure.printer.bluetooth.BluetoothPortGateway;
+import com.mas.impression.infrastructure.printer.usb.UsbPrintServiceGateway;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -39,15 +41,20 @@ public class AdminUiController {
     private final GetPrintHistoryUseCase historyUseCase;
     private final PrintTicketUseCase printTicketUseCase;
     private final AgentSecurityProperties securityProperties;
+    private final UsbPrintServiceGateway usbGateway;
+    private final BluetoothPortGateway bluetoothGateway;
 
     public AdminUiController(GetPrinterStatusUseCase statusUseCase, ConfigurePrinterUseCase configureUseCase,
             GetPrintHistoryUseCase historyUseCase, PrintTicketUseCase printTicketUseCase,
-            AgentSecurityProperties securityProperties) {
+            AgentSecurityProperties securityProperties, UsbPrintServiceGateway usbGateway,
+            BluetoothPortGateway bluetoothGateway) {
         this.statusUseCase = statusUseCase;
         this.configureUseCase = configureUseCase;
         this.historyUseCase = historyUseCase;
         this.printTicketUseCase = printTicketUseCase;
         this.securityProperties = securityProperties;
+        this.usbGateway = usbGateway;
+        this.bluetoothGateway = bluetoothGateway;
     }
 
     @GetMapping
@@ -61,6 +68,8 @@ public class AdminUiController {
     @GetMapping("/config")
     public String configForm(Model model) {
         model.addAttribute("config", configureUseCase.getConfig());
+        model.addAttribute("usbPrintServices", usbGateway.listPrintServiceNames());
+        model.addAttribute("bluetoothPorts", bluetoothGateway.listPortNames());
         return "admin/config";
     }
 

@@ -10,6 +10,7 @@ import com.mas.impression.domain.model.PrintStatus;
 import com.mas.impression.domain.model.PrinterConnectionConfig;
 import com.mas.impression.domain.model.TicketData;
 import com.mas.impression.domain.port.PrinterPort;
+import com.mas.impression.domain.port.PrinterPortResolver;
 import com.mas.impression.domain.port.PrintJobHistoryPort;
 import com.mas.impression.domain.service.TicketFormatter;
 import com.mas.impression.infrastructure.asset.LogoAssetProvider;
@@ -23,25 +24,26 @@ import java.util.UUID;
 
 /**
  * Orchestrates a single print attempt: format the ticket, send it to whichever {@link PrinterPort}
- * is wired in, and report the outcome. A failed print is a normal operational outcome here, not
- * a server error, so it is returned as a {@link PrintStatus#FAILED} response rather than thrown.
+ * transport the current config resolves to, and report the outcome. A failed print is a normal
+ * operational outcome here, not a server error, so it is returned as a {@link PrintStatus#FAILED}
+ * response rather than thrown.
  */
 @Service
 public class PrintTicketService implements PrintTicketUseCase {
 
     private static final Logger LOG = LoggerFactory.getLogger(PrintTicketService.class);
 
-    private final PrinterPort printerPort;
+    private final PrinterPortResolver adapterResolver;
     private final TicketFormatter ticketFormatter;
     private final EffectivePrinterConfigResolver configResolver;
     private final PrintJobHistoryPort history;
     private final LogoAssetProvider logoAssetProvider;
     private final BackendNotifierClient backendNotifier;
 
-    public PrintTicketService(PrinterPort printerPort, TicketFormatter ticketFormatter,
+    public PrintTicketService(PrinterPortResolver adapterResolver, TicketFormatter ticketFormatter,
             EffectivePrinterConfigResolver configResolver, PrintJobHistoryPort history,
             LogoAssetProvider logoAssetProvider, BackendNotifierClient backendNotifier) {
-        this.printerPort = printerPort;
+        this.adapterResolver = adapterResolver;
         this.ticketFormatter = ticketFormatter;
         this.configResolver = configResolver;
         this.history = history;
@@ -55,6 +57,7 @@ public class PrintTicketService implements PrintTicketUseCase {
         String saleNumber = request.sale().saleNumber();
         LocalDateTime attemptedAt = LocalDateTime.now();
         PrinterConnectionConfig config = configResolver.resolve();
+        PrinterPort printerPort = adapterResolver.resolve(config.connectionType());
         TicketData ticketData = TicketDataMapper.toDomain(request);
         byte[] logoRaster = logoAssetProvider.rasterFor(config.paperWidth());
         byte[] payload = ticketFormatter.format(ticketData, config.paperWidth(), logoRaster);

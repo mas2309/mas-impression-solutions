@@ -8,5 +8,7 @@ public record PrinterConfigResponse(
         PaperWidth paperWidth,
         String host,
         int port,
-        int connectTimeoutMillis) {
+        int connectTimeoutMillis,
+        String usbPrintServiceName,
+        String bluetoothPortName) {
 }

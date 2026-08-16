@@ -6,6 +6,7 @@ import com.mas.impression.domain.model.PrinterConnectionType;
 import com.mas.impression.domain.model.PrinterState;
 import com.mas.impression.domain.port.PrinterConfigRepositoryPort;
 import com.mas.impression.domain.port.PrinterPort;
+import com.mas.impression.domain.port.PrinterPortResolver;
 import com.mas.impression.infrastructure.config.PrinterProperties;
 import org.junit.jupiter.api.Test;
 
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -24,6 +26,8 @@ class PrinterStatusServiceTest {
         LocalDateTime lastPrintAt = LocalDateTime.of(2026, 8, 16, 9, 0);
         when(printerPort.status()).thenReturn(
                 new PrinterState(true, PrinterConnectionType.NETWORK, null, lastPrintAt));
+        PrinterPortResolver adapterResolver = mock(PrinterPortResolver.class);
+        when(adapterResolver.resolve(any())).thenReturn(printerPort);
 
         PrinterConfigRepositoryPort repository = mock(PrinterConfigRepositoryPort.class);
         when(repository.load()).thenReturn(Optional.empty());
@@ -32,7 +36,7 @@ class PrinterStatusServiceTest {
         EffectivePrinterConfigResolver configResolver =
                 new EffectivePrinterConfigResolver(repository, printerProperties);
 
-        PrinterStatusService service = new PrinterStatusService(printerPort, configResolver);
+        PrinterStatusService service = new PrinterStatusService(adapterResolver, configResolver);
         PrinterStatusResponse response = service.getStatus();
 
         assertEquals(true, response.connected());
