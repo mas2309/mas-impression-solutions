@@ -1,0 +1,149 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+        "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+        "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<module name="Checker">
+    <property name="charset" value="UTF-8"/>
+    <property name="severity" value="warning"/>
+
+    <!-- Supresiones -->
+    <module name="SuppressionFilter">
+        <property name="file" value="${suppressionFile}"/>
+        <property name="optional" value="true"/>
+    </module>
+
+    <!-- Longitud máxima de archivo -->
+    <module name="FileLength">
+        <property name="max" value="500"/>
+    </module>
+
+    <!-- No usar tabulaciones -->
+    <module name="FileTabCharacter"/>
+
+    <!-- Línea en blanco al final del archivo -->
+    <module name="NewlineAtEndOfFile"/>
+
+    <!-- Longitud máxima de línea (debe estar bajo Checker, no TreeWalker) -->
+    <module name="LineLength">
+        <property name="max" value="140"/>
+        <property name="ignorePattern" value="^import .*$|^package .*$"/>
+    </module>
+
+    <module name="TreeWalker">
+
+        <!-- ========== NAMING CONVENTIONS (Clean Code) ========== -->
+
+        <!-- Clases: PascalCase -->
+        <module name="TypeName">
+            <property name="format" value="^[A-Z][a-zA-Z0-9]*$"/>
+        </module>
+
+        <!-- Métodos: camelCase -->
+        <module name="MethodName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
+
+        <!-- Variables locales: camelCase -->
+        <module name="LocalVariableName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
+
+        <!-- Parámetros: camelCase -->
+        <module name="ParameterName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
+
+        <!-- Campos miembro: camelCase -->
+        <module name="MemberName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
+
+        <!-- Constantes: UPPER_SNAKE_CASE -->
+        <module name="ConstantName">
+            <property name="format" value="^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$"/>
+        </module>
+
+        <!-- Paquetes: lowercase -->
+        <module name="PackageName">
+            <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>
+        </module>
+
+        <!-- ========== TAMAÑO Y COMPLEJIDAD (Clean Code) ========== -->
+
+        <!-- Máximo de métodos por clase -->
+        <module name="MethodCount">
+            <property name="maxTotal" value="20"/>
+        </module>
+
+        <!-- Longitud máxima de método (funciones pequeñas) -->
+        <module name="MethodLength">
+            <property name="max" value="40"/>
+        </module>
+
+        <!-- Máximo de parámetros por método -->
+        <module name="ParameterNumber">
+            <property name="max" value="5"/>
+        </module>
+
+        <!-- Complejidad ciclomática -->
+        <module name="CyclomaticComplexity">
+            <property name="max" value="10"/>
+        </module>
+
+        <!-- ========== IMPORTS ========== -->
+
+        <!-- No usar import con wildcard -->
+        <module name="AvoidStarImport"/>
+
+        <!-- Imports no usados -->
+        <module name="UnusedImports"/>
+
+        <!-- Imports redundantes -->
+        <module name="RedundantImport"/>
+
+        <!-- ========== CÓDIGO LIMPIO ========== -->
+
+        <!-- No dejar bloques vacíos -->
+        <module name="EmptyBlock"/>
+
+        <!-- No dejar catch vacíos -->
+        <module name="EmptyCatchBlock">
+            <property name="exceptionVariableName" value="expected|ignore"/>
+        </module>
+
+        <!-- Usar llaves siempre en if/else/for/while -->
+        <module name="NeedBraces"/>
+
+        <!-- Evitar asignación en subexpresiones -->
+        <module name="InnerAssignment"/>
+
+        <!-- Evitar magic numbers -->
+        <module name="MagicNumber">
+            <property name="ignoreNumbers" value="-1, 0, 1, 2"/>
+            <property name="ignoreAnnotation" value="true"/>
+            <property name="severity" value="info"/>
+        </module>
+
+        <!-- Modificadores en orden estándar -->
+        <module name="ModifierOrder"/>
+
+        <!-- No modificadores redundantes -->
+        <module name="RedundantModifier"/>
+
+        <!-- ========== DISEÑO ========== -->
+
+        <!-- Clases de utilidad deben tener constructor privado -->
+        <module name="HideUtilityClassConstructor"/>
+
+        <!-- Una clase por archivo -->
+        <module name="OneTopLevelClass"/>
+
+        <!-- No usar finalizer -->
+        <module name="NoFinalizer"/>
+
+        <!-- Equals y hashCode deben ir juntos -->
+        <module name="EqualsHashCode"/>
+
+    </module>
+</module>

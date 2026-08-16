@@ -1,0 +1,35 @@
+server:
+  port: 9310
+
+spring:
+  application:
+    name: mas-impression-solutions
+
+agent:
+  data:
+    # Holds printer-config.json and print-history.jsonl. On Windows installs this becomes
+    # C:\ProgramData\MasImpressionSolutions (set via an environment-specific override).
+    directory: "./data"
+  security:
+    # Leave blank to auto-generate a random token at startup (logged once, changes every
+    # restart until M2 persists it). Set explicitly here for local/manual testing.
+    token: ""
+    cors-allowed-origins:
+      - "http://localhost:4200"
+  printer:
+    connection-type: NETWORK
+    paper-width: MM_58
+    network:
+      host: 127.0.0.1
+      port: 9100
+      connect-timeout-millis: 3000
+  backend:
+    # Blank disables the best-effort post-print notification entirely (the backend doesn't
+    # have PUT /api/v1/sales/{saleId}/print-status yet). Set to the ERP base URL once it does.
+    base-url: ""
+    connect-timeout-millis: 2000
+    read-timeout-millis: 2000
+
+logging:
+  level:
+    com.mas.impression: INFO

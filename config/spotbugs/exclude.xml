@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!--
+        Excluir CT_CONSTRUCTOR_THROW en clases de infraestructura y configuración Spring.
+        Spring gestiona el ciclo de vida de estos beans, no hay riesgo de Finalizer attack.
+    -->
+    <Match>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+        <Class name="~.*\.config\..*"/>
+    </Match>
+    <Match>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+        <Class name="~.*\.infrastructure\..*"/>
+    </Match>
+    <Match>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+        <Class name="~.*\.security\..*"/>
+    </Match>
+
+    <!--
+        La inyección de dependencias de Spring no expone representación interna mutable.
+    -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+        <Class name="~.*\.infrastructure\..*"/>
+        <Method name="&lt;init&gt;"/>
+    </Match>
+
+    <!-- Excluir en clases de seguridad (filtros, configs) -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+        <Class name="~.*\.security\..*"/>
+        <Method name="&lt;init&gt;"/>
+    </Match>
+
+    <!--
+        Excluir EI_EXPOSE_REP y EI_EXPOSE_REP2 en entidades JPA (domain/model).
+        Las entidades JPA requieren getters/setters que expongan relaciones mutables.
+        Esto es necesario para el funcionamiento de Hibernate.
+    -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+        <Class name="~.*\.domain\.model\..*"/>
+    </Match>
+
+    <!--
+        Excluir EI_EXPOSE_REP y EI_EXPOSE_REP2 en clases @ConfigurationProperties.
+        El binder relajado de Spring Boot necesita el getter/setter de objetos anidados
+        (ej. PrinterProperties.network) para devolver/almacenar la referencia mutable real;
+        una copia defensiva rompería silenciosamente el binding de esa propiedad anidada.
+    -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+        <Class name="~.*\.infrastructure\.config\..*"/>
+    </Match>
+
+    <!--
+        La inyección de dependencias por constructor en los servicios de aplicación no expone
+        representación interna mutable de forma insegura: son beans gestionados por Spring.
+    -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+        <Class name="~.*\.application\.service\..*"/>
+        <Method name="&lt;init&gt;"/>
+    </Match>
+</FindBugsFilter>

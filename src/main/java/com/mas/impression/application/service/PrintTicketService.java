@@ -1,0 +1,81 @@
+package com.mas.impression.application.service;
+
+import com.mas.impression.application.dto.PrintTicketRequest;
+import com.mas.impression.application.dto.PrintTicketResponse;
+import com.mas.impression.application.mapper.TicketDataMapper;
+import com.mas.impression.application.port.in.PrintTicketUseCase;
+import com.mas.impression.domain.exception.PrinterNotConnectedException;
+import com.mas.impression.domain.model.PrintJob;
+import com.mas.impression.domain.model.PrintStatus;
+import com.mas.impression.domain.model.PrinterConnectionConfig;
+import com.mas.impression.domain.model.TicketData;
+import com.mas.impression.domain.port.PrinterPort;
+import com.mas.impression.domain.port.PrintJobHistoryPort;
+import com.mas.impression.domain.service.TicketFormatter;
+import com.mas.impression.infrastructure.asset.LogoAssetProvider;
+import com.mas.impression.infrastructure.notification.BackendNotifierClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+/**
+ * Orchestrates a single print attempt: format the ticket, send it to whichever {@link PrinterPort}
+ * is wired in, and report the outcome. A failed print is a normal operational outcome here, not
+ * a server error, so it is returned as a {@link PrintStatus#FAILED} response rather than thrown.
+ */
+@Service
+public class PrintTicketService implements PrintTicketUseCase {
+
+    private static final Logger LOG = LoggerFactory.getLogger(PrintTicketService.class);
+
+    private final PrinterPort printerPort;
+    private final TicketFormatter ticketFormatter;
+    private final EffectivePrinterConfigResolver configResolver;
+    private final PrintJobHistoryPort history;
+    private final LogoAssetProvider logoAssetProvider;
+    private final BackendNotifierClient backendNotifier;
+
+    public PrintTicketService(PrinterPort printerPort, TicketFormatter ticketFormatter,
+            EffectivePrinterConfigResolver configResolver, PrintJobHistoryPort history,
+            LogoAssetProvider logoAssetProvider, BackendNotifierClient backendNotifier) {
+        this.printerPort = printerPort;
+        this.ticketFormatter = ticketFormatter;
+        this.configResolver = configResolver;
+        this.history = history;
+        this.logoAssetProvider = logoAssetProvider;
+        this.backendNotifier = backendNotifier;
+    }
+
+    @Override
+    public PrintTicketResponse printTicket(PrintTicketRequest request) {
+        String jobId = UUID.randomUUID().toString();
+        String saleNumber = request.sale().saleNumber();
+        LocalDateTime attemptedAt = LocalDateTime.now();
+        PrinterConnectionConfig config = configResolver.resolve();
+        TicketData ticketData = TicketDataMapper.toDomain(request);
+        byte[] logoRaster = logoAssetProvider.rasterFor(config.paperWidth());
+        byte[] payload = ticketFormatter.format(ticketData, config.paperWidth(), logoRaster);
+
+        PrintTicketResponse response;
+        try {
+            printerPort.connect(config);
+            printerPort.write(payload);
+            LocalDateTime printedAt = LocalDateTime.now();
+            response = new PrintTicketResponse(jobId, PrintStatus.PRINTED, "Ticket impreso correctamente.",
+                    printedAt);
+            backendNotifier.notifyPrinted(request.sale().saleId(), printedAt);
+        } catch (PrinterNotConnectedException ex) {
+            LOG.warn("No se pudo imprimir la venta {}: {}", saleNumber, ex.getMessage());
+            response = new PrintTicketResponse(jobId, PrintStatus.FAILED, ex.getMessage(), null);
+        } finally {
+            printerPort.disconnect();
+        }
+
+        history.record(new PrintJob(
+                jobId, saleNumber, response.status(), response.message(), attemptedAt, response.printedAt()));
+        return response;
+    }
+}

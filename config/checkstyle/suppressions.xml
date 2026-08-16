@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+        "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+        "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+
+<suppressions>
+    <!-- Records (DTOs) no necesitan Javadoc de tipo -->
+    <suppress checks="MissingJavadocType" files=".*Request\.java$"/>
+    <suppress checks="MissingJavadocType" files=".*Response\.java$"/>
+
+    <!-- Entidades JPA pueden tener más métodos por los setters/getters de Lombok -->
+    <suppress checks="MethodCount" files=".*Entity\.java$"/>
+    <suppress checks="MethodCount" files=".*domain[\\/]model[\\/].*\.java$"/>
+
+    <!-- Magic numbers en migraciones y configs -->
+    <suppress checks="MagicNumber" files=".*config[\\/].*\.java$"/>
+    <suppress checks="MagicNumber" files=".*security[\\/].*\.java$"/>
+
+    <!-- ParameterNumber en constructores de builders -->
+    <suppress checks="ParameterNumber" files=".*domain[\\/]model[\\/].*\.java$"/>
+
+    <!-- ParameterNumber en constructores de servicios Spring (inyección por constructor) -->
+    <suppress checks="ParameterNumber" files=".*application[\\/]service[\\/].*\.java$"/>
+
+    <!-- ParameterNumber en interfaces de puertos (métodos con múltiples parámetros de dominio) -->
+    <suppress checks="ParameterNumber" files=".*application[\\/]port[\\/].*\.java$"/>
+
+    <!-- MethodLength en métodos de despacho/transferencia atómica que no se pueden dividir sin romper la transacción -->
+    <suppress checks="MethodLength" files="DispatchService\.java$"/>
+
+    <!-- HideUtilityClassConstructor no aplica a clases Spring Boot -->
+    <suppress checks="HideUtilityClassConstructor" files=".*Application\.java$"/>
+
+    <!-- Tabla de comandos ESC/POS: los literales son el propio contenido del protocolo -->
+    <suppress checks="MagicNumber" files="EscPosCommands\.java$"/>
+
+    <!-- Los tests fijan valores esperados concretos (importes, anchos de papel, puertos) -->
+    <suppress checks="MagicNumber" files="[\\/]test[\\/].*\.java$"/>
+</suppressions>
