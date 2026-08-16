@@ -57,4 +57,29 @@ class AgentTokenAuthFilterTest {
 
         verify(chain, times(1)).doFilter(request, response);
     }
+
+    @Test
+    void allowsCorsPreflightWithoutToken() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest("OPTIONS", "/api/v1/print");
+        request.addHeader("Access-Control-Request-Method", "POST");
+        request.addHeader("Origin", "http://localhost:4200");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        FilterChain chain = mock(FilterChain.class);
+
+        filter.doFilter(request, response, chain);
+
+        verify(chain, times(1)).doFilter(request, response);
+    }
+
+    @Test
+    void rejectsPlainOptionsRequestWithoutPreflightHeader() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest("OPTIONS", "/api/v1/print");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        FilterChain chain = mock(FilterChain.class);
+
+        filter.doFilter(request, response, chain);
+
+        assertEquals(401, response.getStatus());
+        verifyNoInteractions(chain);
+    }
 }
