@@ -1,0 +1,57 @@
+INSTALACION DEL AGENTE DE IMPRESION MAS
+=========================================
+
+Este programa permite imprimir los tickets de venta en la impresora termica
+conectada a este computador. Se instala UNA sola vez por cada caja/computador.
+
+PASO 1 -- Instalar
+------------------
+1. Descomprime este archivo .zip en cualquier carpeta.
+2. Dentro de la carpeta, haz clic derecho sobre "install.ps1" y elige
+   "Ejecutar con PowerShell".
+3. Si Windows muestra una advertencia azul de "Windows protegio su PC" o
+   "Editor desconocido": haz clic en "Mas informacion" y luego en
+   "Ejecutar de todas formas". Es normal -- el instalador no esta firmado
+   digitalmente, pero es seguro, viene directo de MAS Solutions.
+4. Si te pide permiso de Administrador, acepta (Si / Yes).
+5. Espera el mensaje "Listo" en la ventana.
+
+PASO 2 -- Emparejar con el punto de venta
+------------------------------------------
+1. Abre el navegador en ESTE MISMO computador y entra a:
+   http://localhost:9310/admin
+2. Copia el "token" que aparece ahi.
+3. Abre el sistema de ventas (POS) en el navegador, ve a
+   Configuracion > Impresion local, pega el token y guarda.
+4. Dale clic a "Probar conexion" -- debe reconocer el agente (aunque la
+   impresora todavia no este conectada, eso esta bien por ahora).
+
+PASO 3 -- Configurar la impresora
+----------------------------------
+1. En http://localhost:9310/admin/config, elige como esta conectada
+   la impresora termica: Red (WiFi/cable), USB o Bluetooth.
+2. Si es USB o Bluetooth, elige la impresora/puerto de la lista que
+   aparece automaticamente (se detecta sola).
+3. Guarda, y prueba con el boton "Imprimir ticket de prueba" en la
+   pagina principal (http://localhost:9310/admin).
+
+LISTO
+-----
+El programa queda corriendo solo, en segundo plano, y arranca
+automaticamente cada vez que se prenda el computador. No hay que
+volver a hacer nada, solo la primera vez.
+
+ALGO NO FUNCIONO?
+-------------------
+- Revisa que la impresora este prendida y conectada.
+- Vuelve a entrar a http://localhost:9310/admin para ver el estado.
+- Si la pagina no carga, puede que el servicio no haya quedado activo:
+  repite el Paso 1.
+- Si necesitas ayuda, contacta a soporte con este archivo y una
+  descripcion de lo que paso.
+
+PARA DESINSTALAR
+-----------------
+Clic derecho sobre "uninstall.ps1" -> "Ejecutar con PowerShell" (como
+Administrador), dentro de la carpeta donde quedo instalado
+(normalmente C:\Program Files\MasImpressionSolutions\PrintAgent).

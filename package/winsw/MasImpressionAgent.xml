@@ -1,0 +1,18 @@
+<service>
+  <id>MasImpressionAgent</id>
+  <name>MAS Impresion - Agente de Ticketera</name>
+  <description>Agente local de impresion de tickets para el punto de venta MAS/Amara. Imprime directo desde el navegador sin pasar por el backend.</description>
+  <executable>%BASE%\runtime\bin\java.exe</executable>
+  <arguments>-jar "%BASE%\mas-impression-solutions.jar"</arguments>
+  <workingdirectory>%BASE%</workingdirectory>
+  <log mode="roll-by-size">
+    <sizeThreshold>10240</sizeThreshold>
+    <keepFiles>5</keepFiles>
+  </log>
+  <env name="AGENT_DATA_DIRECTORY" value="C:\ProgramData\MasImpressionSolutions\data"/>
+  <startmode>Automatic</startmode>
+  <delayedAutoStart>true</delayedAutoStart>
+  <onfailure action="restart" delay="10 sec"/>
+  <onfailure action="restart" delay="30 sec"/>
+  <resetfailure>1 hour</resetfailure>
+</service>

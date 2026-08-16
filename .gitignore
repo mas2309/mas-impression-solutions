@@ -37,3 +37,6 @@ build/
 data/
 *.log
 
+# Packaged installer output (built by package/build-installer.ps1)
+dist/
+
