@@ -9,9 +9,10 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Local-pairing token and CORS allow-list guarding {@code /api/**}. If no token is configured,
- * one is generated at startup and logged — good enough to print a first ticket via curl, but it
- * changes on every restart until M2 persists it and surfaces it in the admin UI.
+ * Local-pairing token and CORS allow-list guarding {@code /api/**}. If no token is configured
+ * here, a placeholder is generated so {@link #getToken()} is never blank; {@link AgentTokenInitializer}
+ * then overwrites it with whatever is persisted on disk (or persists this fresh one), so the
+ * value actually used survives restarts instead of invalidating every paired frontend each time.
  */
 @ConfigurationProperties(prefix = "agent.security")
 public class AgentSecurityProperties {
@@ -41,9 +42,7 @@ public class AgentSecurityProperties {
     void generateTokenIfMissing() {
         if (token == null || token.isBlank()) {
             token = UUID.randomUUID().toString();
-            LOG.warn("agent.security.token no configurado: se generó uno nuevo para esta sesión: {}", token);
-            LOG.warn("Este token cambiará en cada reinicio. Configuralo explícitamente en application.yml "
-                    + "para pruebas repetibles.");
+            LOG.debug("agent.security.token no configurado, se generó un valor temporal: {}", token);
         }
     }
 }

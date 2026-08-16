@@ -16,6 +16,7 @@ agent:
     token: ""
     cors-allowed-origins:
       - "http://localhost:4200"
+      - "https://amara.sandbox-massolutions.uk"
   printer:
     connection-type: NETWORK
     paper-width: MM_58
