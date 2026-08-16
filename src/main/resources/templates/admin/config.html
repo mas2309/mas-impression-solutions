@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Agente de Impresión — Configuración</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; color: #1a1a1a; }
+        nav a { margin-right: 1rem; }
+        .card { border: 1px solid #ddd; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1.25rem; }
+        label { display: block; margin-top: 0.9rem; font-weight: 600; }
+        input, select { width: 100%; padding: 0.4rem; margin-top: 0.3rem; box-sizing: border-box; }
+        button { margin-top: 1.25rem; padding: 0.5rem 1.25rem; }
+        .flash-success { background: #dcf5e0; color: #1a7a32; padding: 0.6rem 1rem; border-radius: 6px; }
+        .flash-error { background: #fbdada; color: #a31c1c; padding: 0.6rem 1rem; border-radius: 6px; }
+    </style>
+</head>
+<body>
+<nav>
+    <a href="/admin">Estado</a>
+    <a href="/admin/config">Configuración</a>
+    <a href="/admin/history">Historial</a>
+</nav>
+<h1>Configuración de la impresora</h1>
+
+<p th:if="${success}" class="flash-success" th:text="${success}"></p>
+<p th:if="${error}" class="flash-error" th:text="${error}"></p>
+
+<div class="card">
+    <form method="post" action="/admin/config">
+        <label for="connectionType">Transporte</label>
+        <select id="connectionType" name="connectionType">
+            <option value="NETWORK" selected="selected">Red (WiFi / Ethernet)</option>
+        </select>
+        <p><small>USB y Bluetooth llegan en una versión posterior.</small></p>
+
+        <label for="paperWidth">Ancho de papel</label>
+        <select id="paperWidth" name="paperWidth">
+            <option value="MM_58" th:selected="${config.paperWidth().name() == 'MM_58'}">58mm</option>
+            <option value="MM_80" th:selected="${config.paperWidth().name() == 'MM_80'}">80mm</option>
+        </select>
+
+        <label for="host">Dirección IP de la impresora</label>
+        <input type="text" id="host" name="host" th:value="${config.host()}" placeholder="192.168.1.50"/>
+
+        <label for="port">Puerto</label>
+        <input type="number" id="port" name="port" th:value="${config.port()}" min="1" max="65535"/>
+
+        <label for="connectTimeoutMillis">Tiempo de espera de conexión (ms)</label>
+        <input type="number" id="connectTimeoutMillis" name="connectTimeoutMillis"
+               th:value="${config.connectTimeoutMillis()}" min="100"/>
+
+        <button type="submit">Guardar</button>
+    </form>
+</div>
+</body>
+</html>

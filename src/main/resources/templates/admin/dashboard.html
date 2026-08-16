@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Agente de Impresión — Estado</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; color: #1a1a1a; }
+        nav a { margin-right: 1rem; }
+        .card { border: 1px solid #ddd; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1.25rem; }
+        .badge { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 999px; font-size: 0.85rem; }
+        .badge-ok { background: #dcf5e0; color: #1a7a32; }
+        .badge-error { background: #fbdada; color: #a31c1c; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+        .flash-success { background: #dcf5e0; color: #1a7a32; padding: 0.6rem 1rem; border-radius: 6px; }
+        .flash-error { background: #fbdada; color: #a31c1c; padding: 0.6rem 1rem; border-radius: 6px; }
+        code { background: #f2f2f2; padding: 0.1rem 0.4rem; border-radius: 4px; }
+    </style>
+</head>
+<body>
+<nav>
+    <a href="/admin">Estado</a>
+    <a href="/admin/config">Configuración</a>
+    <a href="/admin/history">Historial</a>
+</nav>
+<h1>Agente de Impresión</h1>
+
+<p th:if="${success}" class="flash-success" th:text="${success}"></p>
+<p th:if="${error}" class="flash-error" th:text="${error}"></p>
+
+<div class="card">
+    <h2>Estado de la impresora</h2>
+    <p>
+        <span class="badge" th:classappend="${status.connected()} ? 'badge-ok' : 'badge-error'"
+              th:text="${status.connected()} ? 'Conectada' : 'Sin conexión'"></span>
+    </p>
+    <p>Transporte: <strong th:text="${status.transport()}"></strong></p>
+    <p>Ancho de papel: <strong th:text="${status.paperWidth()}"></strong></p>
+    <p th:if="${status.lastError()}">Último error: <code th:text="${status.lastError()}"></code></p>
+    <p th:if="${status.lastPrintAt()}">Última impresión: <span th:text="${status.lastPrintAt()}"></span></p>
+    <form method="post" action="/admin/test-print">
+        <button type="submit">Imprimir ticket de prueba</button>
+    </form>
+</div>
+
+<div class="card">
+    <h2>Emparejamiento con el frontend</h2>
+    <p>Copia este token en la configuración del punto de venta como cabecera <code>X-Agent-Token</code>:</p>
+    <p><code th:text="${agentToken}"></code></p>
+    <p><small>Cambia en cada reinicio del agente hasta que se persista de forma explícita.</small></p>
+</div>
+
+<div class="card">
+    <h2>Últimas impresiones</h2>
+    <table>
+        <thead>
+        <tr><th>Venta</th><th>Estado</th><th>Fecha</th><th>Mensaje</th></tr>
+        </thead>
+        <tbody>
+        <tr th:each="job : ${history}">
+            <td th:text="${job.saleNumber()}"></td>
+            <td th:text="${job.status()}"></td>
+            <td th:text="${job.createdAt()}"></td>
+            <td th:text="${job.message()}"></td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(history)}"><td colspan="4">Aún no hay impresiones registradas.</td></tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

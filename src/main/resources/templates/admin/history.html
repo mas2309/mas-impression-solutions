@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Agente de Impresión — Historial</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 900px; margin: 2rem auto; color: #1a1a1a; }
+        nav a { margin-right: 1rem; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+<nav>
+    <a href="/admin">Estado</a>
+    <a href="/admin/config">Configuración</a>
+    <a href="/admin/history">Historial</a>
+</nav>
+<h1>Historial de impresión</h1>
+
+<table>
+    <thead>
+    <tr><th>ID</th><th>Venta</th><th>Estado</th><th>Creado</th><th>Impreso</th><th>Mensaje</th></tr>
+    </thead>
+    <tbody>
+    <tr th:each="job : ${history}">
+        <td th:text="${job.jobId()}"></td>
+        <td th:text="${job.saleNumber()}"></td>
+        <td th:text="${job.status()}"></td>
+        <td th:text="${job.createdAt()}"></td>
+        <td th:text="${job.printedAt()}"></td>
+        <td th:text="${job.message()}"></td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(history)}"><td colspan="6">Aún no hay impresiones registradas.</td></tr>
+    </tbody>
+</table>
+</body>
+</html>
