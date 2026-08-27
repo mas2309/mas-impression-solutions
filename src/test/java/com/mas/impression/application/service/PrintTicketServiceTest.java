@@ -27,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -120,6 +121,16 @@ class PrintTicketServiceTest {
         service.printTicket(request);
 
         verify(ticketFormatter).format(any(), any(), eq(tenantLogo));
+        verify(logoAssetProvider, never()).rasterFor(any());
+    }
+
+    @Test
+    void printTicketPrintsWithNoLogoWhenTenantLogoUrlFailsToResolve() {
+        PrintTicketRequest request = withLogoUrl("https://cdn.example.com/broken.png");
+
+        service.printTicket(request);
+
+        verify(ticketFormatter).format(any(), any(), isNull());
         verify(logoAssetProvider, never()).rasterFor(any());
     }
 

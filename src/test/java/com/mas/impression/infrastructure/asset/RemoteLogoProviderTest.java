@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -18,6 +19,9 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RemoteLogoProviderTest {
+
+    private static final String SVG_LOGO = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"100\" height=\"40\">"
+            + "<rect width=\"100\" height=\"40\" fill=\"black\"/></svg>";
 
     private final RemoteLogoProvider provider = new RemoteLogoProvider(new LogoRasterConverter());
     private HttpServer server;
@@ -37,6 +41,18 @@ class RemoteLogoProviderTest {
         });
         server.createContext("/missing.jpeg", exchange -> {
             exchange.sendResponseHeaders(404, -1);
+            exchange.close();
+        });
+        server.createContext("/logo.svg", exchange -> {
+            byte[] svg = SVG_LOGO.getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200, svg.length);
+            exchange.getResponseBody().write(svg);
+            exchange.close();
+        });
+        server.createContext("/broken.svg", exchange -> {
+            byte[] svg = "<svg><this is not valid svg".getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200, svg.length);
+            exchange.getResponseBody().write(svg);
             exchange.close();
         });
         server.start();
@@ -69,6 +85,18 @@ class RemoteLogoProviderTest {
 
         assertTrue(raster.length > 0);
         assertTrue(requestCount.get() > 0);
+    }
+
+    @Test
+    void rasterizesAnSvgLogoThatImageIoCannotDecodeDirectly() {
+        byte[] raster = provider.rasterFor(url("/logo.svg"), PaperWidth.MM_58);
+
+        assertTrue(raster.length > 0);
+    }
+
+    @Test
+    void returnsNullWhenTheSvgIsMalformed() {
+        assertNull(provider.rasterFor(url("/broken.svg"), PaperWidth.MM_58));
     }
 
     @Test

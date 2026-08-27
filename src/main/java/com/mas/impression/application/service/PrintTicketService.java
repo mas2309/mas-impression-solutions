@@ -88,12 +88,15 @@ public class PrintTicketService implements PrintTicketUseCase {
     }
 
     /**
-     * Prefers the business's own logo (sent per request); falls back to the bundled default
-     * when there's none or it couldn't be fetched — this keeps existing callers that never send
-     * {@code logoUrl} (e.g. Amará) printing exactly as before.
+     * Callers that never send {@code logoUrl} (e.g. Amará) print the bundled default exactly as
+     * before. A caller that DOES send one is a tenant with its own branding: if that logo can't
+     * be resolved, the ticket prints with no logo at all rather than the bundled default — a
+     * missing/broken tenant logo should never print someone else's brand on the receipt.
      */
     private byte[] resolveLogoRaster(String logoUrl, PaperWidth paperWidth) {
-        byte[] tenantLogo = remoteLogoProvider.rasterFor(logoUrl, paperWidth);
-        return tenantLogo != null ? tenantLogo : logoAssetProvider.rasterFor(paperWidth);
+        if (logoUrl == null || logoUrl.isBlank()) {
+            return logoAssetProvider.rasterFor(paperWidth);
+        }
+        return remoteLogoProvider.rasterFor(logoUrl, paperWidth);
     }
 }

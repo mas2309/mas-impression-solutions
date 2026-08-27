@@ -2,11 +2,17 @@ package com.mas.impression.infrastructure.asset;
 
 import com.mas.impression.domain.model.PaperWidth;
 import com.mas.impression.domain.service.LogoRasterConverter;
+import org.apache.batik.transcoder.TranscoderException;
+import org.apache.batik.transcoder.TranscoderInput;
+import org.apache.batik.transcoder.TranscoderOutput;
+import org.apache.batik.transcoder.image.ImageTranscoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.imageio.ImageIO;
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -27,6 +33,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * reconvert the same image on every sale. Any failure (missing URL, network error, unreadable
  * image) returns {@code null} instead of throwing, so a broken logo link degrades to "no
  * per-tenant logo" rather than failing the print job.
+ *
+ * <p>Logos are commonly exported as SVG by branding/design tools, which {@link ImageIO} cannot
+ * decode on its own — those are rasterized via Batik as a fallback after a direct raster read
+ * fails.
  */
 @Component
 public class RemoteLogoProvider {
@@ -95,6 +105,44 @@ public class RemoteLogoProvider {
             LOG.warn("El logo del negocio respondió HTTP {} ({})", response.statusCode(), logoUrl);
             return null;
         }
-        return ImageIO.read(new ByteArrayInputStream(response.body()));
+        byte[] body = response.body();
+        BufferedImage raster = ImageIO.read(new ByteArrayInputStream(body));
+        return raster != null ? raster : rasterizeSvg(body, logoUrl);
+    }
+
+    private static BufferedImage rasterizeSvg(byte[] body, String logoUrl) {
+        try {
+            SvgToBufferedImageTranscoder transcoder = new SvgToBufferedImageTranscoder();
+            transcoder.transcode(new TranscoderInput(new ByteArrayInputStream(body)), null);
+            return transcoder.getImage();
+        } catch (TranscoderException ex) {
+            LOG.warn("El logo del negocio no se pudo interpretar como SVG ({}): {}", logoUrl, ex.getMessage());
+            return null;
+        }
+    }
+
+    /** Renders an SVG onto an opaque white background, since thermal raster has no transparency. */
+    private static final class SvgToBufferedImageTranscoder extends ImageTranscoder {
+
+        private BufferedImage image;
+
+        @Override
+        public BufferedImage createImage(int width, int height) {
+            BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+            Graphics2D graphics = img.createGraphics();
+            graphics.setColor(Color.WHITE);
+            graphics.fillRect(0, 0, width, height);
+            graphics.dispose();
+            return img;
+        }
+
+        @Override
+        public void writeImage(BufferedImage img, TranscoderOutput output) {
+            this.image = img;
+        }
+
+        BufferedImage getImage() {
+            return image;
+        }
     }
 }
