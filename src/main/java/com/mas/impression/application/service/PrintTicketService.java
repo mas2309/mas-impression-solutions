@@ -5,6 +5,7 @@ import com.mas.impression.application.dto.PrintTicketResponse;
 import com.mas.impression.application.mapper.TicketDataMapper;
 import com.mas.impression.application.port.in.PrintTicketUseCase;
 import com.mas.impression.domain.exception.PrinterNotConnectedException;
+import com.mas.impression.domain.model.PaperWidth;
 import com.mas.impression.domain.model.PrintJob;
 import com.mas.impression.domain.model.PrintStatus;
 import com.mas.impression.domain.model.PrinterConnectionConfig;
@@ -14,6 +15,7 @@ import com.mas.impression.domain.port.PrinterPortResolver;
 import com.mas.impression.domain.port.PrintJobHistoryPort;
 import com.mas.impression.domain.service.TicketFormatter;
 import com.mas.impression.infrastructure.asset.LogoAssetProvider;
+import com.mas.impression.infrastructure.asset.RemoteLogoProvider;
 import com.mas.impression.infrastructure.notification.BackendNotifierClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,16 +40,19 @@ public class PrintTicketService implements PrintTicketUseCase {
     private final EffectivePrinterConfigResolver configResolver;
     private final PrintJobHistoryPort history;
     private final LogoAssetProvider logoAssetProvider;
+    private final RemoteLogoProvider remoteLogoProvider;
     private final BackendNotifierClient backendNotifier;
 
     public PrintTicketService(PrinterPortResolver adapterResolver, TicketFormatter ticketFormatter,
             EffectivePrinterConfigResolver configResolver, PrintJobHistoryPort history,
-            LogoAssetProvider logoAssetProvider, BackendNotifierClient backendNotifier) {
+            LogoAssetProvider logoAssetProvider, RemoteLogoProvider remoteLogoProvider,
+            BackendNotifierClient backendNotifier) {
         this.adapterResolver = adapterResolver;
         this.ticketFormatter = ticketFormatter;
         this.configResolver = configResolver;
         this.history = history;
         this.logoAssetProvider = logoAssetProvider;
+        this.remoteLogoProvider = remoteLogoProvider;
         this.backendNotifier = backendNotifier;
     }
 
@@ -59,7 +64,7 @@ public class PrintTicketService implements PrintTicketUseCase {
         PrinterConnectionConfig config = configResolver.resolve();
         PrinterPort printerPort = adapterResolver.resolve(config.connectionType());
         TicketData ticketData = TicketDataMapper.toDomain(request);
-        byte[] logoRaster = logoAssetProvider.rasterFor(config.paperWidth());
+        byte[] logoRaster = resolveLogoRaster(request.branding().logoUrl(), config.paperWidth());
         byte[] payload = ticketFormatter.format(ticketData, config.paperWidth(), logoRaster);
 
         PrintTicketResponse response;
@@ -80,5 +85,15 @@ public class PrintTicketService implements PrintTicketUseCase {
         history.record(new PrintJob(
                 jobId, saleNumber, response.status(), response.message(), attemptedAt, response.printedAt()));
         return response;
+    }
+
+    /**
+     * Prefers the business's own logo (sent per request); falls back to the bundled default
+     * when there's none or it couldn't be fetched — this keeps existing callers that never send
+     * {@code logoUrl} (e.g. Amará) printing exactly as before.
+     */
+    private byte[] resolveLogoRaster(String logoUrl, PaperWidth paperWidth) {
+        byte[] tenantLogo = remoteLogoProvider.rasterFor(logoUrl, paperWidth);
+        return tenantLogo != null ? tenantLogo : logoAssetProvider.rasterFor(paperWidth);
     }
 }

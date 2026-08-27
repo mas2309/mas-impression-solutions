@@ -11,6 +11,7 @@ import com.mas.impression.domain.port.PrinterPortResolver;
 import com.mas.impression.domain.port.PrintJobHistoryPort;
 import com.mas.impression.domain.service.TicketFormatter;
 import com.mas.impression.infrastructure.asset.LogoAssetProvider;
+import com.mas.impression.infrastructure.asset.RemoteLogoProvider;
 import com.mas.impression.infrastructure.config.PrinterProperties;
 import com.mas.impression.infrastructure.notification.BackendNotifierClient;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -37,6 +39,7 @@ class PrintTicketServiceTest {
     private final TicketFormatter ticketFormatter = mock(TicketFormatter.class);
     private final PrintJobHistoryPort history = mock(PrintJobHistoryPort.class);
     private final LogoAssetProvider logoAssetProvider = mock(LogoAssetProvider.class);
+    private final RemoteLogoProvider remoteLogoProvider = mock(RemoteLogoProvider.class);
     private final BackendNotifierClient backendNotifier = mock(BackendNotifierClient.class);
     private PrintTicketService service;
 
@@ -48,10 +51,11 @@ class PrintTicketServiceTest {
                 new EffectivePrinterConfigResolver(repository, new PrinterProperties());
         PrinterPortResolver adapterResolver = mock(PrinterPortResolver.class);
         when(adapterResolver.resolve(any())).thenReturn(printerPort);
-        service = new PrintTicketService(
-                adapterResolver, ticketFormatter, configResolver, history, logoAssetProvider, backendNotifier);
+        service = new PrintTicketService(adapterResolver, ticketFormatter, configResolver, history,
+                logoAssetProvider, remoteLogoProvider, backendNotifier);
         when(ticketFormatter.format(any(), any(), any())).thenReturn(new byte[] {1, 2, 3});
         when(logoAssetProvider.rasterFor(any())).thenReturn(new byte[0]);
+        when(remoteLogoProvider.rasterFor(any(), any())).thenReturn(null);
     }
 
     @Test
@@ -100,6 +104,35 @@ class PrintTicketServiceTest {
         verify(printerPort).disconnect();
     }
 
+    @Test
+    void printTicketFallsBackToBundledLogoWhenTenantHasNoLogoUrl() {
+        service.printTicket(validRequest());
+
+        verify(logoAssetProvider).rasterFor(any());
+    }
+
+    @Test
+    void printTicketPrefersTenantLogoOverBundledDefault() {
+        byte[] tenantLogo = {9, 9, 9};
+        when(remoteLogoProvider.rasterFor(eq("https://cdn.example.com/logo.png"), any())).thenReturn(tenantLogo);
+
+        PrintTicketRequest request = withLogoUrl("https://cdn.example.com/logo.png");
+        service.printTicket(request);
+
+        verify(ticketFormatter).format(any(), any(), eq(tenantLogo));
+        verify(logoAssetProvider, never()).rasterFor(any());
+    }
+
+    private static PrintTicketRequest withLogoUrl(String logoUrl) {
+        PrintTicketRequest base = validRequest();
+        PrintTicketRequest.BrandingPayload branding = base.branding();
+        PrintTicketRequest.BrandingPayload withLogo = new PrintTicketRequest.BrandingPayload(
+                branding.businessName(), logoUrl, branding.tradeName(), branding.nit(), branding.address(),
+                branding.city(), branding.department(), branding.phone(), branding.email(),
+                branding.receiptHeader(), branding.receiptFooter());
+        return new PrintTicketRequest(base.sale(), withLogo);
+    }
+
     private static PrintTicketRequest validRequest() {
         PrintTicketRequest.SaleItemPayload item = new PrintTicketRequest.SaleItemPayload(
                 "Gaseosa 400ml", BigDecimal.ONE, new BigDecimal("15000"), new BigDecimal("15000"),
@@ -111,7 +144,7 @@ class PrintTicketServiceTest {
                 new BigDecimal("2850"), null, new BigDecimal("17850"), "Maria Lopez", "Juan Perez",
                 LocalDateTime.of(2026, 8, 16, 10, 30));
         PrintTicketRequest.BrandingPayload branding = new PrintTicketRequest.BrandingPayload(
-                "Tienda Amara", "Amara", "900123456-7", "Calle 10 # 5-20", "Bogota", "Cundinamarca",
+                "Tienda Amara", null, "Amara", "900123456-7", "Calle 10 # 5-20", "Bogota", "Cundinamarca",
                 "3001234567", "contacto@amara.com", "Gracias por su compra", "No aplica devoluciones");
         return new PrintTicketRequest(sale, branding);
     }

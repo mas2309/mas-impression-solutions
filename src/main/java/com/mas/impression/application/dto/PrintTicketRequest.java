@@ -54,6 +54,7 @@ public record PrintTicketRequest(
 
     public record BrandingPayload(
             @NotBlank String businessName,
+            String logoUrl,
             String tradeName,
             String nit,
             String address,

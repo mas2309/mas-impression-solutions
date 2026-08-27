@@ -117,7 +117,7 @@ public class AdminUiController {
 
     private static PrintTicketRequest.BrandingPayload sampleBranding() {
         return new PrintTicketRequest.BrandingPayload(
-                "Comercio de prueba", null, "000000000-0", null, null, null, null, null,
+                "Comercio de prueba", null, null, "000000000-0", null, null, null, null, null,
                 null, "Este es un ticket de prueba generado desde el panel de administración.");
     }
 }
