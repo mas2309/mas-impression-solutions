@@ -50,6 +50,8 @@ Copy-Item (Join-Path $packageDir "winsw\MasImpressionAgent.exe") $stagingDir
 Copy-Item (Join-Path $packageDir "winsw\MasImpressionAgent.xml") $stagingDir
 Copy-Item (Join-Path $packageDir "install.ps1") $stagingDir
 Copy-Item (Join-Path $packageDir "uninstall.ps1") $stagingDir
+Copy-Item (Join-Path $packageDir "INSTALAR.bat") $stagingDir
+Copy-Item (Join-Path $packageDir "DESINSTALAR.bat") $stagingDir
 Copy-Item (Join-Path $packageDir "INSTRUCTIVO.txt") $stagingDir
 
 Write-Host "== 4/4: Comprimiendo ==" -ForegroundColor Cyan

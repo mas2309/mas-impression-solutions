@@ -7,14 +7,15 @@ conectada a este computador. Se instala UNA sola vez por cada caja/computador.
 PASO 1 -- Instalar
 ------------------
 1. Descomprime este archivo .zip en cualquier carpeta.
-2. Dentro de la carpeta, haz clic derecho sobre "install.ps1" y elige
-   "Ejecutar con PowerShell".
+2. Dentro de la carpeta, haz DOBLE CLIC sobre "INSTALAR.bat".
 3. Si Windows muestra una advertencia azul de "Windows protegio su PC" o
    "Editor desconocido": haz clic en "Mas informacion" y luego en
    "Ejecutar de todas formas". Es normal -- el instalador no esta firmado
    digitalmente, pero es seguro, viene directo de MAS Solutions.
-4. Si te pide permiso de Administrador, acepta (Si / Yes).
-5. Espera el mensaje "Listo" en la ventana.
+4. Windows va a pedir permiso de Administrador (una ventana con fondo
+   oscuro): haz clic en "Si".
+5. Se abre una ventana negra y al final debe decir "Listo" en verde.
+   Presiona ENTER para cerrarla.
 
 PASO 2 -- Emparejar con el punto de venta
 ------------------------------------------
@@ -52,6 +53,6 @@ ALGO NO FUNCIONO?
 
 PARA DESINSTALAR
 -----------------
-Clic derecho sobre "uninstall.ps1" -> "Ejecutar con PowerShell" (como
-Administrador), dentro de la carpeta donde quedo instalado
-(normalmente C:\Program Files\MasImpressionSolutions\PrintAgent).
+Doble clic sobre "DESINSTALAR.bat" (en la carpeta original donde
+descomprimiste el .zip) y acepta el permiso de Administrador que pida
+Windows.
