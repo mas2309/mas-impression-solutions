@@ -56,3 +56,10 @@ PARA DESINSTALAR
 Doble clic sobre "DESINSTALAR.bat" (en la carpeta original donde
 descomprimiste el .zip) y acepta el permiso de Administrador que pida
 Windows.
+
+Al final pregunta si quieres borrar tambien los datos (token, configuracion
+de la impresora e historial):
+- Responde "N" si solo vas a reinstalar o actualizar: se conserva el mismo
+  token y no hay que volver a emparejar.
+- Responde "S" para empezar de cero: al reinstalar se genera un token nuevo
+  que hay que pegar otra vez en cada punto de venta (Paso 2).

@@ -28,10 +28,11 @@ if (-not (Test-IsAdministrator)) {
 
 try {
     $installDir = "C:\Program Files\MasImpressionSolutions\PrintAgent"
+    $dataDir = "C:\ProgramData\MasImpressionSolutions\data"
     $exe = "$installDir\MasImpressionAgent.exe"
 
     if (-not (Test-Path $exe)) {
-        Write-Host "No se encontro una instalacion en $installDir. Nada que hacer."
+        Write-Host "No se encontro una instalacion en $installDir."
     } else {
         Write-Host "== Desinstalando el Agente de Impresion MAS ==" -ForegroundColor Cyan
 
@@ -45,8 +46,24 @@ try {
 
         Write-Host ""
         Write-Host "Servicio desinstalado." -ForegroundColor Green
-        Write-Host "Los archivos en '$installDir' y los datos en 'C:\ProgramData\MasImpressionSolutions'"
-        Write-Host "no se borraron automaticamente (config e historial de impresion). Borralos a mano si quieres una limpieza completa."
+    }
+
+    # Por defecto se conservan los datos: asi reinstalar mantiene el mismo token (no hay que
+    # volver a pegarlo en el punto de venta) y el mismo deviceId (no consume otro cupo del
+    # negocio). Borrarlos es un "empezar de cero" explicito.
+    if (Test-Path $dataDir) {
+        Write-Host ""
+        Write-Host "En '$dataDir' quedan el token de emparejamiento, el identificador del equipo,"
+        Write-Host "la configuracion de la impresora y el historial de impresion."
+        Write-Host "Si los borras, al reinstalar se genera un token NUEVO (hay que pegarlo otra vez en"
+        Write-Host "cada punto de venta) y el equipo cuenta como NUEVO frente al limite del negocio."
+        $answer = Read-Host "Borrar tambien esos datos para empezar de cero? (S/N)"
+        if ($answer -match '^\s*[sS]') {
+            Remove-Item -Recurse -Force $dataDir
+            Write-Host "Datos borrados." -ForegroundColor Green
+        } else {
+            Write-Host "Datos conservados: una reinstalacion reutiliza el mismo token y configuracion."
+        }
     }
 } catch {
     Write-Host ""
