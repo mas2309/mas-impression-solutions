@@ -30,9 +30,22 @@ try {
     $installDir = "C:\Program Files\MasImpressionSolutions\PrintAgent"
     $dataDir = "C:\ProgramData\MasImpressionSolutions\data"
     $sourceDir = $PSScriptRoot
+    $serviceName = "MasImpressionAgent"
 
-    Write-Host "== Instalando el Agente de Impresion MAS ==" -ForegroundColor Cyan
+    $alreadyInstalled = [bool](Get-Service -Name $serviceName -ErrorAction SilentlyContinue)
+
+    Write-Host "== $(if ($alreadyInstalled) { 'Actualizando' } else { 'Instalando' }) el Agente de Impresion MAS ==" -ForegroundColor Cyan
     Write-Host "Destino: $installDir"
+
+    if ($alreadyInstalled) {
+        Write-Host "Ya hay una instalacion previa: deteniendo el servicio para actualizar los archivos..."
+        Push-Location $installDir
+        try {
+            & ".\MasImpressionAgent.exe" stop
+        } finally {
+            Pop-Location
+        }
+    }
 
     New-Item -ItemType Directory -Force -Path $installDir | Out-Null
     New-Item -ItemType Directory -Force -Path $dataDir | Out-Null
@@ -43,16 +56,18 @@ try {
 
     Push-Location $installDir
     try {
-        Write-Host "Registrando el servicio de Windows..."
-        & ".\MasImpressionAgent.exe" install
-        if ($LASTEXITCODE -ne 0) {
-            throw "No se pudo registrar el servicio (codigo $LASTEXITCODE)."
+        if (-not $alreadyInstalled) {
+            Write-Host "Registrando el servicio de Windows..."
+            & ".\MasImpressionAgent.exe" install
+            if ($LASTEXITCODE -ne 0) {
+                throw "No se pudo registrar el servicio (codigo $LASTEXITCODE)."
+            }
         }
 
         Write-Host "Iniciando el servicio..."
         & ".\MasImpressionAgent.exe" start
         if ($LASTEXITCODE -ne 0) {
-            throw "El servicio se registro pero no arranco (codigo $LASTEXITCODE). Revisa los logs en $installDir\logs."
+            throw "El servicio no arranco (codigo $LASTEXITCODE). Revisa los logs en $installDir\logs."
         }
     } finally {
         Pop-Location

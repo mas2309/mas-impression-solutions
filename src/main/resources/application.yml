@@ -17,6 +17,9 @@ agent:
     cors-allowed-origins:
       - "http://localhost:4200"
       - "https://amara.sandbox-massolutions.uk"
+      - "https://erp.sandbox-massolutions.uk"
+      - "https://amara.massolution.org"
+      - "https://erp.massolution.org"
   printer:
     connection-type: NETWORK
     paper-width: MM_58
